@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dashboard - ChurnPredict AI</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+    <body>
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+        </div>
+        <div class="toast-container" id="toastContainer"></div>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">AI</div>
+                <span class="brand-text">ChurnPredict</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item active">
+                    <i class="fas fa-home"></i><span>Dashboard</span>
+                </a>
+                <a href="/prediction" class="nav-item">
+                    <i class="fas fa-brain"></i><span>Prediction</span>
+                </a>
+                <a href="/performance" class="nav-item">
+                    <i class="fas fa-chart-line"></i><span>Performance</span>
+                </a>
+                <a href="/features" class="nav-item">
+                    <i class="fas fa-chart-bar"></i><span>Features</span>
+                </a>
+                <a href="/history" class="nav-item">
+                    <i class="fas fa-history"></i><span>History</span>
+                </a>
+            </nav>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Quick Stats</div>
+                <div style="padding: 0 10px">
+                    <div class="quick-stat">
+                        <span class="label">Total Predictions</span>
+                        <span class="value" id="qsTotal">—</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">High Risk</span>
+                        <span
+                            class="value"
+                            style="color: var(--danger)"
+                            id="qsHigh"
+                            >—</span
+                        >
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Accuracy</span>
+                        <span class="value" style="color: var(--success)"
+                            >84.65%</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main -->
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center; gap: 16px">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-title">
+                        <h1>Dashboard Overview</h1>
+                        <p>Real-time customer churn analytics</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <a href="/prediction" class="btn btn-primary">
+                        <i class="fas fa-brain"></i> New Prediction
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <section class="animate-in">
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">7,043</div>
+                            <div class="stat-label">Total Customers</div>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> +2.5%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card green">
+                        <div class="stat-icon">
+                            <i class="fas fa-user-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">5,695</div>
+                            <div class="stat-label">Active Customers</div>
+                            <div class="stat-change up">
+                                <i class="fas fa-arrow-up"></i> +3.2%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card orange">
+                        <div class="stat-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">1,348</div>
+                            <div class="stat-label">Churned Last Month</div>
+                            <div class="stat-change down">
+                                <i class="fas fa-arrow-down"></i> +19.2%
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stat-card red">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div>
+                            <div class="stat-value">19.1%</div>
+                            <div class="stat-label">Churn Rate</div>
+                            <div class="stat-change down">
+                                <i class="fas fa-arrow-down"></i> +2.3%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Quick Summary Cards -->
+            <div class="content-grid">
+                <section class="card animate-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-bolt"></i> Quick Actions
+                        </div>
+                    </div>
+                    <div
+                        class="card-body"
+                        style="display: flex; flex-direction: column; gap: 12px"
+                    >
+                        <a
+                            href="/prediction"
+                            class="btn btn-primary"
+                            style="justify-content: center"
+                        >
+                            <i class="fas fa-brain"></i> Make a Prediction
+                        </a>
+                        <a
+                            href="/performance"
+                            class="btn btn-outline"
+                            style="justify-content: center"
+                        >
+                            <i class="fas fa-chart-line"></i> View Model Metrics
+                        </a>
+                        <a
+                            href="/features"
+                            class="btn btn-outline"
+                            style="justify-content: center"
+                        >
+                            <i class="fas fa-chart-bar"></i> Feature Importance
+                        </a>
+                        <a
+                            href="/history"
+                            class="btn btn-outline"
+                            style="justify-content: center"
+                        >
+                            <i class="fas fa-history"></i> Prediction History
+                        </a>
+                    </div>
+                </section>
+
+                <section class="card animate-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-info-circle"></i> Model Summary
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">Algorithm</span>
+                                <span
+                                    class="metric-value"
+                                    style="font-size: 16px"
+                                    >Gradient Boosting</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">ROC AUC</span>
+                                <span
+                                    class="metric-value"
+                                    style="
+                                        font-size: 18px;
+                                        color: var(--success);
+                                    "
+                                    >0.8465</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Accuracy</span>
+                                <span
+                                    class="metric-value"
+                                    style="font-size: 18px"
+                                    >79.84%</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Total Features</span>
+                                <span
+                                    class="metric-value"
+                                    style="font-size: 18px"
+                                    >20</span
+                                >
+                            </div>
+                        </div>
+                        <p
+                            style="
+                                margin-top: 16px;
+                                font-size: 13px;
+                                color: var(--gray-500);
+                                line-height: 1.6;
+                            "
+                        >
+                            The model uses a Gradient Boosting Classifier
+                            trained on 7,043 customer records with 20 features
+                            including tenure, contract type, internet service,
+                            and payment method. It achieves an AUC of 0.8465 on
+                            the test set.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="card animate-in" style="grid-column: 1/-1">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-history"></i> Recent Predictions
+                        </div>
+                        <a href="/history" class="btn btn-outline"
+                            >View All <i class="fas fa-arrow-right"></i
+                        ></a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Gender</th>
+                                        <th>Tenure</th>
+                                        <th>Contract</th>
+                                        <th>Monthly Charges</th>
+                                        <th>Probability</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentBody">
+                                    <tr>
+                                        <td
+                                            colspan="7"
+                                            class="empty-state"
+                                            style="padding: 30px"
+                                        >
+                                            No predictions yet
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="page-footer">
+                <p>
+                    Customer Churn Prediction System v1.0 | Built with Gradient
+                    Boosting & Machine Learning
+                </p>
+            </div>
+        </main>
+
+        <script src="/static/app.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", () => {
+                const preds = getPredictions();
+                document.getElementById("qsTotal").textContent =
+                    preds.length.toLocaleString();
+                document.getElementById("qsHigh").textContent = preds.filter(
+                    (p) => p.probability >= 0.7,
+                ).length;
+
+                const tbody = document.getElementById("recentBody");
+                const recent = preds.slice(0, 5);
+                if (recent.length === 0) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="7" class="empty-state" style="padding:30px;">No predictions yet. <a href="prediction.html" style="color:var(--primary);">Make one now</a>.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = recent
+                    .map(
+                        (item) => `
+                <tr>
+                    <td>${item.time}</td>
+                    <td>${item.gender}</td>
+                    <td>${item.tenure}</td>
+                    <td>${item.contract}</td>
+                    <td>$${Number(item.monthlyCharges).toFixed(2)}</td>
+                    <td><strong>${(item.probability * 100).toFixed(1)}%</strong></td>
+                    <td><span class="status-badge ${item.status === "Yes" ? "churned" : "retained"}">${item.status}</span></td>
+                </tr>
+            `,
+                    )
+                    .join("");
+            });
+        </script>
+    </body>
+</html>

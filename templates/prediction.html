@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Prediction - ChurnPredict AI</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+    <body>
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+        </div>
+        <div class="toast-container" id="toastContainer"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">AI</div>
+                <span class="brand-text">ChurnPredict</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item"
+                    ><i class="fas fa-home"></i><span>Dashboard</span></a
+                >
+                <a href="/prediction" class="nav-item active"
+                    ><i class="fas fa-brain"></i><span>Prediction</span></a
+                >
+                <a href="/performance" class="nav-item"
+                    ><i class="fas fa-chart-line"></i
+                    ><span>Performance</span></a
+                >
+                <a href="/features" class="nav-item"
+                    ><i class="fas fa-chart-bar"></i><span>Features</span></a
+                >
+                <a href="/history" class="nav-item"
+                    ><i class="fas fa-history"></i><span>History</span></a
+                >
+            </nav>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Quick Stats</div>
+                <div style="padding: 0 10px">
+                    <div class="quick-stat">
+                        <span class="label">Total Predictions</span
+                        ><span class="value" id="qsTotal">—</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">High Risk</span
+                        ><span
+                            class="value"
+                            style="color: var(--danger)"
+                            id="qsHigh"
+                            >—</span
+                        >
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Accuracy</span
+                        ><span class="value" style="color: var(--success)"
+                            >84.65%</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center; gap: 16px">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-title">
+                        <h1>Churn Prediction</h1>
+                        <p>Enter customer data to predict churn probability</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-outline" onclick="resetForm()">
+                        <i class="fas fa-redo"></i> Reset
+                    </button>
+                    <button
+                        class="btn btn-outline"
+                        onclick="shuffleData()"
+                        title="Shuffle random data"
+                    >
+                        <i class="fas fa-random"></i> Shuffle
+                    </button>
+                </div>
+            </div>
+
+            <section class="card animate-in">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-user-edit"></i> Customer Information
+                    </div>
+                </div>
+                <div class="card-body">
+                    <form id="predictionForm" onsubmit="event.preventDefault()">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Gender</label>
+                                <select class="form-control" id="gender">
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Senior Citizen</label>
+                                <select class="form-control" id="seniorCitizen">
+                                    <option value="">Select</option>
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Partner</label>
+                                <select class="form-control" id="partner">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 16px">
+                            <div class="form-group">
+                                <label class="form-label">Dependents</label>
+                                <select class="form-control" id="dependents">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Phone Service</label>
+                                <select class="form-control" id="phoneService">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <!-- Add this after the phoneService field -->
+                            <div class="form-group">
+                                <label class="form-label" for="multipleLines"
+                                    >Multiple Lines
+                                    <i
+                                        class="fas fa-info-circle"
+                                        title="Whether the customer has multiple phone lines"
+                                    ></i
+                                ></label>
+                                <select
+                                    class="form-control"
+                                    id="multipleLines"
+                                    required
+                                >
+                                    <option value="">Select...</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                    <option value="No phone service">
+                                        No phone service
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Contract</label>
+                                <select class="form-control" id="contract">
+                                    <option value="">Select</option>
+                                    <option value="Month-to-month">
+                                        Month-to-month
+                                    </option>
+                                    <option value="One year">One year</option>
+                                    <option value="Two year">Two year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 16px">
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Tenure (months)</label
+                                >
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="tenure"
+                                    placeholder="e.g. 12"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Monthly Charges ($)</label
+                                >
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="monthlyCharges"
+                                    placeholder="e.g. 70.35"
+                                    step="0.01"
+                                />
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Total Charges ($)</label
+                                >
+                                <input
+                                    type="number"
+                                    class="form-control"
+                                    id="totalCharges"
+                                    placeholder="e.g. 844.20"
+                                    step="0.01"
+                                />
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 16px">
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Internet Service</label
+                                >
+                                <select
+                                    class="form-control"
+                                    id="internetService"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="DSL">DSL</option>
+                                    <option value="Fiber optic">
+                                        Fiber optic
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Online Security</label
+                                >
+                                <select
+                                    class="form-control"
+                                    id="onlineSecurity"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Online Backup</label>
+                                <select class="form-control" id="onlineBackup">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 16px">
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Device Protection</label
+                                >
+                                <select
+                                    class="form-control"
+                                    id="deviceProtection"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Tech Support</label>
+                                <select class="form-control" id="techSupport">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Streaming TV</label>
+                                <select class="form-control" id="streamingTV">
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 16px">
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Streaming Movies</label
+                                >
+                                <select
+                                    class="form-control"
+                                    id="streamingMovies"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No internet service">
+                                        No internet service
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label"
+                                    >Paperless Billing</label
+                                >
+                                <select
+                                    class="form-control"
+                                    id="paperlessBilling"
+                                >
+                                    <option value="">Select</option>
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Payment Method</label>
+                                <select class="form-control" id="paymentMethod">
+                                    <option value="">Select</option>
+                                    <option value="Electronic check">
+                                        Electronic check
+                                    </option>
+                                    <option value="Mailed check">
+                                        Mailed check
+                                    </option>
+                                    <option value="Bank transfer (automatic)">
+                                        Bank transfer (automatic)
+                                    </option>
+                                    <option value="Credit card (automatic)">
+                                        Credit card (automatic)
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div
+                            style="
+                                display: flex;
+                                justify-content: flex-end;
+                                margin-top: 24px;
+                                gap: 12px;
+                            "
+                        >
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="resetForm()"
+                            >
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                            <button
+                                type="button"
+                                class="btn btn-success"
+                                onclick="predictChurn()"
+                            >
+                                <i class="fas fa-bolt"></i> Predict Churn
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Result -->
+                    <div class="prediction-result" id="predictionResult">
+                        <div class="risk-badge" id="riskBadge">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span id="riskLevel">High Risk</span>
+                        </div>
+                        <div class="probability-value" id="probabilityValue">
+                            0%
+                        </div>
+                        <div class="probability-bar">
+                            <div
+                                class="probability-bar-fill"
+                                id="probabilityBar"
+                                style="width: 0%"
+                            ></div>
+                        </div>
+                        <p class="risk-message" id="riskMessage"></p>
+                        <div style="margin-top: 20px">
+                            <a href="history.html" class="btn btn-outline"
+                                ><i class="fas fa-history"></i> View History</a
+                            >
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="page-footer">
+                <p>
+                    Customer Churn Prediction System v1.0 | Built with Gradient
+                    Boosting & Machine Learning
+                </p>
+            </div>
+        </main>
+
+        <script src="/static/app.js"></script>
+        <script>
+            function updateQuickStats() {
+                const preds = getPredictions();
+                document.getElementById("qsTotal").textContent =
+                    preds.length.toLocaleString();
+                document.getElementById("qsHigh").textContent = preds.filter(
+                    (p) => p.probability >= 0.7,
+                ).length;
+            }
+
+            function shuffleData() {
+                const pick = (arr) =>
+                    arr[Math.floor(Math.random() * arr.length)];
+                const rand = (min, max) =>
+                    (Math.random() * (max - min) + min).toFixed(2);
+
+                const vals = {
+                    gender: pick(["Male", "Female"]),
+                    seniorCitizen: pick(["0", "1"]),
+                    partner: pick(["Yes", "No"]),
+                    dependents: pick(["Yes", "No"]),
+                    phoneService: pick(["Yes", "No"]),
+                    multipleLines: pick(["Yes", "No", "No phone service"]),
+                    contract: pick(["Month-to-month", "One year", "Two year"]),
+                    tenure: Math.floor(Math.random() * 72).toString(),
+                    monthlyCharges: rand(18, 120),
+                    totalCharges: rand(18, 8600),
+                    internetService: pick(["DSL", "Fiber optic", "No"]),
+                    onlineSecurity: pick(["Yes", "No", "No internet service"]),
+                    onlineBackup: pick(["Yes", "No", "No internet service"]),
+                    deviceProtection: pick([
+                        "Yes",
+                        "No",
+                        "No internet service",
+                    ]),
+                    techSupport: pick(["Yes", "No", "No internet service"]),
+                    streamingTV: pick(["Yes", "No", "No internet service"]),
+                    streamingMovies: pick(["Yes", "No", "No internet service"]),
+                    paperlessBilling: pick(["Yes", "No"]),
+                    paymentMethod: pick([
+                        "Electronic check",
+                        "Mailed check",
+                        "Bank transfer (automatic)",
+                        "Credit card (automatic)",
+                    ]),
+                };
+                Object.entries(vals).forEach(([id, val]) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = val;
+                });
+                showToast("Random profile shuffled", "info");
+            }
+
+            function resetForm() {
+                document.getElementById("predictionForm").reset();
+                document
+                    .getElementById("predictionResult")
+                    .classList.remove("show");
+            }
+
+            async function predictChurn() {
+                const fields = [
+                    "gender",
+                    "seniorCitizen",
+                    "partner",
+                    "dependents",
+                    "phoneService",
+                    "multipleLines",
+                    "contract",
+                    "internetService",
+                    "onlineSecurity",
+                    "onlineBackup",
+                    "deviceProtection",
+                    "techSupport",
+                    "streamingTV",
+                    "streamingMovies",
+                    "paperlessBilling",
+                    "paymentMethod",
+                ];
+
+                // Validate selects
+                for (const f of fields) {
+                    if (!document.getElementById(f).value) {
+                        showToast(
+                            `Please select a value for "${f.replace(/([A-Z])/g, " $1")}"`,
+                            "error",
+                        );
+                        document.getElementById(f).focus();
+                        return;
+                    }
+                }
+                if (!document.getElementById("tenure").value) {
+                    showToast("Please enter tenure", "error");
+                    return;
+                }
+                if (!document.getElementById("monthlyCharges").value) {
+                    showToast("Please enter monthly charges", "error");
+                    return;
+                }
+                if (!document.getElementById("totalCharges").value) {
+                    showToast("Please enter total charges", "error");
+                    return;
+                }
+
+                const formData = {};
+                fields.forEach(
+                    (f) => (formData[f] = document.getElementById(f).value),
+                );
+                formData.tenure = parseFloat(
+                    document.getElementById("tenure").value,
+                );
+                formData.monthlyCharges = parseFloat(
+                    document.getElementById("monthlyCharges").value,
+                );
+                formData.totalCharges = parseFloat(
+                    document.getElementById("totalCharges").value,
+                );
+
+                showLoading();
+                try {
+                    const response = await fetch("/api/predict", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(formData),
+                    });
+                    if (!response.ok) throw new Error("Prediction failed");
+                    const data = await response.json();
+
+                    const prob = data.probability;
+                    const resultDiv =
+                        document.getElementById("predictionResult");
+                    const riskBadge = document.getElementById("riskBadge");
+                    const probValue =
+                        document.getElementById("probabilityValue");
+                    const probBar = document.getElementById("probabilityBar");
+                    const riskMsg = document.getElementById("riskMessage");
+
+                    probValue.textContent = (prob * 100).toFixed(1) + "%";
+
+                    let riskLevel, riskClass, riskMessage;
+                    if (prob >= 0.7) {
+                        riskLevel = "High Risk";
+                        riskClass = "high";
+                        riskMessage =
+                            "This customer has a high probability of churning. Immediate retention action is recommended.";
+                    } else if (prob >= 0.4) {
+                        riskLevel = "Medium Risk";
+                        riskClass = "medium";
+                        riskMessage =
+                            "This customer is at moderate risk of churning. Consider proactive retention strategies.";
+                    } else {
+                        riskLevel = "Low Risk";
+                        riskClass = "low";
+                        riskMessage =
+                            "This customer is likely to stay. Maintain good service quality and engagement.";
+                    }
+
+                    resultDiv.className =
+                        "prediction-result show " + riskClass + "-risk";
+                    riskBadge.className = "risk-badge " + riskClass;
+                    riskBadge.querySelector("span").textContent = riskLevel;
+                    probValue.className = "probability-value " + riskClass;
+                    probBar.className = "probability-bar-fill " + riskClass;
+
+                    setTimeout(() => {
+                        probBar.style.width = prob * 100 + "%";
+                    }, 50);
+                    riskMsg.textContent = riskMessage;
+
+                    // Save
+                    const preds = getPredictions();
+                    preds.unshift({
+                        time: new Date().toLocaleString(),
+                        gender: formData.gender,
+                        tenure: formData.tenure,
+                        contract: formData.contract,
+                        monthlyCharges: formData.monthlyCharges,
+                        probability: prob,
+                        prediction: data.churn_prediction,
+                        status: data.churn_label,
+                    });
+                    savePredictions(preds);
+                    updateQuickStats();
+                    showToast("Prediction saved to history", "success");
+                } catch (error) {
+                    showToast("Prediction failed: " + error.message, "error");
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            updateQuickStats();
+        </script>
+    </body>
+</html>

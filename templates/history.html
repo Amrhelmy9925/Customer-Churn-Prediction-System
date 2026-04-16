@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>History - ChurnPredict AI</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+    <body>
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+        </div>
+        <div class="toast-container" id="toastContainer"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">AI</div>
+                <span class="brand-text">ChurnPredict</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item"
+                    ><i class="fas fa-home"></i><span>Dashboard</span></a
+                >
+                <a href="/prediction" class="nav-item"
+                    ><i class="fas fa-brain"></i><span>Prediction</span></a
+                >
+                <a href="/performance" class="nav-item"
+                    ><i class="fas fa-chart-line"></i
+                    ><span>Performance</span></a
+                >
+                <a href="/features" class="nav-item"
+                    ><i class="fas fa-chart-bar"></i><span>Features</span></a
+                >
+                <a href="/history" class="nav-item active"
+                    ><i class="fas fa-history"></i><span>History</span></a
+                >
+            </nav>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Quick Stats</div>
+                <div style="padding: 0 10px">
+                    <div class="quick-stat">
+                        <span class="label">Total Predictions</span
+                        ><span class="value" id="qsTotal">—</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">High Risk</span
+                        ><span
+                            class="value"
+                            style="color: var(--danger)"
+                            id="qsHigh"
+                            >—</span
+                        >
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Accuracy</span
+                        ><span class="value" style="color: var(--success)"
+                            >84.65%</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center; gap: 16px">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-title">
+                        <h1>Prediction History</h1>
+                        <p>View and manage all past predictions</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-outline" onclick="exportCSV()">
+                        <i class="fas fa-download"></i> Export CSV
+                    </button>
+                    <button class="btn btn-danger" onclick="clearHistory()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                    <a href="/prediction" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> New Prediction
+                    </a>
+                </div>
+            </div>
+
+            <!-- Summary Stats -->
+            <section class="stats-grid animate-in" id="historyStats">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-list"></i></div>
+                    <div>
+                        <div class="stat-value" id="hTotal">0</div>
+                        <div class="stat-label">Total Predictions</div>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="hChurned">0</div>
+                        <div class="stat-label">Predicted Churn</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="hRetained">0</div>
+                        <div class="stat-label">Predicted Retained</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="hAvgProb">0%</div>
+                        <div class="stat-label">Avg Churn Probability</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Filter Bar -->
+            <section class="card animate-in" style="margin-bottom: 24px">
+                <div
+                    class="card-body"
+                    style="
+                        padding: 16px 24px;
+                        display: flex;
+                        gap: 16px;
+                        align-items: center;
+                        flex-wrap: wrap;
+                    "
+                >
+                    <span
+                        style="
+                            font-size: 14px;
+                            font-weight: 500;
+                            color: var(--gray-600);
+                        "
+                        ><i class="fas fa-filter"></i> Filter:</span
+                    >
+                    <select
+                        class="form-control"
+                        id="filterStatus"
+                        onchange="renderHistory()"
+                        style="width: auto; min-width: 160px"
+                    >
+                        <option value="all">All Predictions</option>
+                        <option value="Yes">Churned</option>
+                        <option value="No">Retained</option>
+                    </select>
+                    <select
+                        class="form-control"
+                        id="filterRisk"
+                        onchange="renderHistory()"
+                        style="width: auto; min-width: 160px"
+                    >
+                        <option value="all">All Risk Levels</option>
+                        <option value="high">High Risk (≥70%)</option>
+                        <option value="medium">Medium Risk (40-70%)</option>
+                        <option value="low">Low Risk (<40%)</option>
+                    </select>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="filterSearch"
+                        placeholder="Search contract type..."
+                        oninput="renderHistory()"
+                        style="width: auto; min-width: 200px"
+                    />
+                </div>
+            </section>
+
+            <!-- Table -->
+            <section class="card animate-in">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fas fa-table"></i> All Predictions
+                    </div>
+                    <span
+                        style="font-size: 13px; color: var(--gray-500)"
+                        id="resultCount"
+                    ></span>
+                </div>
+                <div class="card-body">
+                    <div class="table-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Time</th>
+                                    <th>Gender</th>
+                                    <th>Tenure</th>
+                                    <th>Contract</th>
+                                    <th>Monthly Charges</th>
+                                    <th>Probability</th>
+                                    <th>Prediction</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <div class="page-footer">
+                <p>
+                    Customer Churn Prediction System v1.0 | Built with Gradient
+                    Boosting & Machine Learning
+                </p>
+            </div>
+        </main>
+
+        <script src="/static/app.js"></script>
+        <script>
+            function updateQuickStats() {
+                const preds = getPredictions();
+                document.getElementById("qsTotal").textContent =
+                    preds.length.toLocaleString();
+                document.getElementById("qsHigh").textContent = preds.filter(
+                    (p) => p.probability >= 0.7,
+                ).length;
+            }
+
+            function getFiltered() {
+                let preds = getPredictions();
+                const status = document.getElementById("filterStatus").value;
+                const risk = document.getElementById("filterRisk").value;
+                const search = document
+                    .getElementById("filterSearch")
+                    .value.toLowerCase();
+
+                if (status !== "all")
+                    preds = preds.filter((p) => p.status === status);
+                if (risk === "high")
+                    preds = preds.filter((p) => p.probability >= 0.7);
+                else if (risk === "medium")
+                    preds = preds.filter(
+                        (p) => p.probability >= 0.4 && p.probability < 0.7,
+                    );
+                else if (risk === "low")
+                    preds = preds.filter((p) => p.probability < 0.4);
+                if (search)
+                    preds = preds.filter((p) =>
+                        (p.contract || "").toLowerCase().includes(search),
+                    );
+
+                return preds;
+            }
+
+            function renderHistory() {
+                const preds = getFiltered();
+                const allPreds = getPredictions();
+                const tbody = document.getElementById("historyBody");
+                const countEl = document.getElementById("resultCount");
+
+                // Update summary stats (based on all, not filtered)
+                document.getElementById("hTotal").textContent = allPreds.length;
+                document.getElementById("hChurned").textContent =
+                    allPreds.filter((p) => p.status === "Yes").length;
+                document.getElementById("hRetained").textContent =
+                    allPreds.filter((p) => p.status === "No").length;
+                const avg = allPreds.length
+                    ? (
+                          (allPreds.reduce((s, p) => s + p.probability, 0) /
+                              allPreds.length) *
+                          100
+                      ).toFixed(1)
+                    : 0;
+                document.getElementById("hAvgProb").textContent = avg + "%";
+
+                countEl.textContent = `Showing ${preds.length} of ${allPreds.length}`;
+
+                if (preds.length === 0) {
+                    tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <i class="fas fa-inbox"></i>
+                                <p>${allPreds.length === 0 ? 'No predictions yet. <a href="/prediction" style="color:var(--primary);">Make your first prediction</a>.' : "No results match your filters."}</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                    return;
+                }
+
+                tbody.innerHTML = preds
+                    .map((item, index) => {
+                        const probPct = (item.probability * 100).toFixed(1);
+                        let riskColor = "var(--success)";
+                        if (item.probability >= 0.7)
+                            riskColor = "var(--danger)";
+                        else if (item.probability >= 0.4)
+                            riskColor = "var(--warning)";
+                        return `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${item.time}</td>
+                        <td>${item.gender}</td>
+                        <td>${item.tenure}</td>
+                        <td>${item.contract}</td>
+                        <td>$${Number(item.monthlyCharges).toFixed(2)}</td>
+                        <td><strong style="color:${riskColor};">${probPct}%</strong></td>
+                        <td>${item.prediction}</td>
+                        <td><span class="status-badge ${item.status === "Yes" ? "churned" : "retained"}">${item.status}</span></td>
+                    </tr>
+                `;
+                    })
+                    .join("");
+            }
+
+            function clearHistory() {
+                if (getPredictions().length === 0) {
+                    showToast("History is already empty", "info");
+                    return;
+                }
+                if (
+                    confirm(
+                        "Are you sure you want to clear all prediction history? This cannot be undone.",
+                    )
+                ) {
+                    localStorage.removeItem("churn_predictions");
+                    renderHistory();
+                    updateQuickStats();
+                    showToast("History cleared", "success");
+                }
+            }
+
+            function exportCSV() {
+                const preds = getFiltered();
+                if (preds.length === 0) {
+                    showToast("No data to export", "error");
+                    return;
+                }
+                const headers = [
+                    "Time",
+                    "Gender",
+                    "Tenure",
+                    "Contract",
+                    "Monthly Charges",
+                    "Probability",
+                    "Prediction",
+                    "Status",
+                ];
+                const rows = preds.map((p) => [
+                    p.time,
+                    p.gender,
+                    p.tenure,
+                    p.contract,
+                    Number(p.monthlyCharges).toFixed(2),
+                    (p.probability * 100).toFixed(1) + "%",
+                    p.prediction,
+                    p.status,
+                ]);
+                let csv =
+                    headers.join(",") +
+                    "\n" +
+                    rows
+                        .map((r) => r.map((c) => `"${c}"`).join(","))
+                        .join("\n");
+                const blob = new Blob([csv], { type: "text/csv" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `churn_predictions_${new Date().toISOString().slice(0, 10)}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showToast(`Exported ${preds.length} records`, "success");
+            }
+
+            renderHistory();
+            updateQuickStats();
+        </script>
+    </body>
+</html>

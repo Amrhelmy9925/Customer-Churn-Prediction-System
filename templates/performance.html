@@ -1,0 +1,537 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Performance - ChurnPredict AI</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        />
+        <link rel="stylesheet" href="/static/styles.css" />
+    </head>
+    <body>
+        <div class="loading-overlay" id="loading">
+            <div class="spinner"></div>
+        </div>
+        <div class="toast-container" id="toastContainer"></div>
+
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon">AI</div>
+                <span class="brand-text">ChurnPredict</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/" class="nav-item"
+                    ><i class="fas fa-home"></i><span>Dashboard</span></a
+                >
+                <a href="/prediction" class="nav-item"
+                    ><i class="fas fa-brain"></i><span>Prediction</span></a
+                >
+                <a href="/performance" class="nav-item active"
+                    ><i class="fas fa-chart-line"></i
+                    ><span>Performance</span></a
+                >
+                <a href="/features" class="nav-item"
+                    ><i class="fas fa-chart-bar"></i><span>Features</span></a
+                >
+                <a href="/history" class="nav-item"
+                    ><i class="fas fa-history"></i><span>History</span></a
+                >
+            </nav>
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">Quick Stats</div>
+                <div style="padding: 0 10px">
+                    <div class="quick-stat">
+                        <span class="label">Total Predictions</span
+                        ><span class="value" id="qsTotal">—</span>
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">High Risk</span
+                        ><span
+                            class="value"
+                            style="color: var(--danger)"
+                            id="qsHigh"
+                            >—</span
+                        >
+                    </div>
+                    <div class="quick-stat">
+                        <span class="label">Accuracy</span
+                        ><span class="value" style="color: var(--success)"
+                            >84.65%</span
+                        >
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="top-bar">
+                <div style="display: flex; align-items: center; gap: 16px">
+                    <button class="menu-toggle" id="menuToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="page-title">
+                        <h1>Model Performance</h1>
+                        <p>Evaluation metrics for the churn prediction model</p>
+                    </div>
+                </div>
+                <div class="top-actions">
+                    <button class="btn btn-primary" onclick="refreshMetrics()">
+                        <i class="fas fa-sync"></i> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Primary Metrics -->
+            <section class="stats-grid animate-in">
+                <div class="stat-card blue">
+                    <div class="stat-icon"><i class="fas fa-bullseye"></i></div>
+                    <div>
+                        <div class="stat-value" id="rocAuc">0.8465</div>
+                        <div class="stat-label">ROC AUC Score</div>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-double"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="accuracy">79.84%</div>
+                        <div class="stat-label">Accuracy</div>
+                    </div>
+                </div>
+                <div class="stat-card orange">
+                    <div class="stat-icon">
+                        <i class="fas fa-crosshairs"></i>
+                    </div>
+                    <div>
+                        <div class="stat-value" id="precision">65.85%</div>
+                        <div class="stat-label">Precision</div>
+                    </div>
+                </div>
+                <div class="stat-card red">
+                    <div class="stat-icon"><i class="fas fa-search"></i></div>
+                    <div>
+                        <div class="stat-value" id="recall">50.00%</div>
+                        <div class="stat-label">Recall</div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="content-grid">
+                <!-- All Metrics Detail -->
+                <section class="card animate-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-table"></i> Detailed Metrics
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <span class="metric-label">ROC AUC Score</span>
+                                <span
+                                    class="metric-value"
+                                    id="mRocAuc"
+                                    style="font-size: 20px"
+                                    >0.8465</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Accuracy</span>
+                                <span
+                                    class="metric-value"
+                                    id="mAccuracy"
+                                    style="font-size: 20px"
+                                    >79.84%</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Precision</span>
+                                <span
+                                    class="metric-value"
+                                    id="mPrecision"
+                                    style="font-size: 20px"
+                                    >65.85%</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Recall</span>
+                                <span
+                                    class="metric-value"
+                                    id="mRecall"
+                                    style="font-size: 20px"
+                                    >50.00%</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">F1 Score</span>
+                                <span
+                                    class="metric-value"
+                                    id="mF1"
+                                    style="font-size: 20px"
+                                    >56.84%</span
+                                >
+                            </div>
+                            <div class="metric-item">
+                                <span class="metric-label">Log Loss</span>
+                                <span
+                                    class="metric-value"
+                                    id="mLogLoss"
+                                    style="font-size: 20px"
+                                    >0.4521</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Interpretation Guide -->
+                <section class="card animate-in">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-book"></i> Metric Guide
+                        </div>
+                    </div>
+                    <div
+                        class="card-body"
+                        style="
+                            font-size: 14px;
+                            color: var(--gray-600);
+                            line-height: 1.8;
+                        "
+                    >
+                        <p>
+                            <strong style="color: var(--dark)">ROC AUC</strong>
+                            — Measures the model's ability to distinguish
+                            between churners and non-churners. Values closer to
+                            1.0 are better.
+                        </p>
+                        <p style="margin-top: 12px">
+                            <strong style="color: var(--dark)">Accuracy</strong>
+                            — Overall proportion of correct predictions out of
+                            all predictions.
+                        </p>
+                        <p style="margin-top: 12px">
+                            <strong style="color: var(--dark)"
+                                >Precision</strong
+                            >
+                            — Of all customers predicted to churn, how many
+                            actually did. Important when false positives are
+                            costly.
+                        </p>
+                        <p style="margin-top: 12px">
+                            <strong style="color: var(--dark)">Recall</strong> —
+                            Of all customers who actually churned, how many were
+                            correctly identified. Important when missing
+                            churners is costly.
+                        </p>
+                        <p style="margin-top: 12px">
+                            <strong style="color: var(--dark)">F1 Score</strong>
+                            — Harmonic mean of precision and recall. Balances
+                            both concerns.
+                        </p>
+                        <p style="margin-top: 12px">
+                            <strong style="color: var(--dark)">Log Loss</strong>
+                            — Penalizes confident but wrong predictions. Lower
+                            is better.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Confusion Matrix -->
+                <section class="card animate-in" style="grid-column: 1/-1">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <i class="fas fa-th"></i> Confusion Matrix
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div style="max-width: 500px; margin: 0 auto">
+                            <table
+                                style="
+                                    width: 100%;
+                                    border-collapse: collapse;
+                                    text-align: center;
+                                "
+                            >
+                                <thead>
+                                    <tr>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                            "
+                                        ></th>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                color: var(--gray-500);
+                                                font-size: 13px;
+                                            "
+                                            colspan="2"
+                                        >
+                                            Predicted
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                            "
+                                        ></th>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                font-size: 13px;
+                                            "
+                                        >
+                                            No Churn
+                                        </th>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                font-size: 13px;
+                                            "
+                                        >
+                                            Churn
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                font-size: 13px;
+                                                color: var(--gray-500);
+                                            "
+                                        >
+                                            Actual<br />No Churn
+                                        </th>
+                                        <td
+                                            style="
+                                                padding: 24px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                background: rgba(
+                                                    16,
+                                                    185,
+                                                    129,
+                                                    0.1
+                                                );
+                                                font-size: 28px;
+                                                font-weight: 700;
+                                                color: var(--success);
+                                            "
+                                            id="cmTN"
+                                        >
+                                            933
+                                        </td>
+                                        <td
+                                            style="
+                                                padding: 24px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                background: rgba(
+                                                    239,
+                                                    68,
+                                                    68,
+                                                    0.05
+                                                );
+                                                font-size: 28px;
+                                                font-weight: 700;
+                                                color: var(--gray-400);
+                                            "
+                                            id="cmFP"
+                                        >
+                                            107
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th
+                                            style="
+                                                padding: 12px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                font-size: 13px;
+                                                color: var(--gray-500);
+                                            "
+                                        >
+                                            Actual<br />Churn
+                                        </th>
+                                        <td
+                                            style="
+                                                padding: 24px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                background: rgba(
+                                                    239,
+                                                    68,
+                                                    68,
+                                                    0.05
+                                                );
+                                                font-size: 28px;
+                                                font-weight: 700;
+                                                color: var(--gray-400);
+                                            "
+                                            id="cmFN"
+                                        >
+                                            179
+                                        </td>
+                                        <td
+                                            style="
+                                                padding: 24px;
+                                                border: 1px solid
+                                                    var(--gray-200);
+                                                background: rgba(
+                                                    16,
+                                                    185,
+                                                    129,
+                                                    0.1
+                                                );
+                                                font-size: 28px;
+                                                font-weight: 700;
+                                                color: var(--success);
+                                            "
+                                            id="cmTP"
+                                        >
+                                            179
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: center;
+                                    gap: 24px;
+                                    margin-top: 16px;
+                                    font-size: 13px;
+                                    color: var(--gray-500);
+                                "
+                            >
+                                <span
+                                    ><span
+                                        style="
+                                            display: inline-block;
+                                            width: 12px;
+                                            height: 12px;
+                                            background: rgba(16, 185, 129, 0.2);
+                                            border-radius: 3px;
+                                            vertical-align: middle;
+                                            margin-right: 4px;
+                                        "
+                                    ></span>
+                                    Correct</span
+                                >
+                                <span
+                                    ><span
+                                        style="
+                                            display: inline-block;
+                                            width: 12px;
+                                            height: 12px;
+                                            background: rgba(239, 68, 68, 0.08);
+                                            border-radius: 3px;
+                                            vertical-align: middle;
+                                            margin-right: 4px;
+                                        "
+                                    ></span>
+                                    Incorrect</span
+                                >
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="page-footer">
+                <p>
+                    Customer Churn Prediction System v1.0 | Built with Gradient
+                    Boosting & Machine Learning
+                </p>
+            </div>
+        </main>
+
+        <script src="/static/app.js"></script>
+        <script>
+            function updateQuickStats() {
+                const preds = getPredictions();
+                document.getElementById("qsTotal").textContent =
+                    preds.length.toLocaleString();
+                document.getElementById("qsHigh").textContent = preds.filter(
+                    (p) => p.probability >= 0.7,
+                ).length;
+            }
+
+            async function refreshMetrics() {
+                showLoading();
+                try {
+                    const response = await fetch("/metrics");
+                    if (!response.ok) throw new Error("Failed to load metrics");
+                    const data = await response.json();
+
+                    document.getElementById("rocAuc").textContent =
+                        data.roc_auc.toFixed(4);
+                    document.getElementById("accuracy").textContent =
+                        (data.accuracy * 100).toFixed(2) + "%";
+                    document.getElementById("precision").textContent =
+                        (data.precision * 100).toFixed(2) + "%";
+                    document.getElementById("recall").textContent =
+                        (data.recall * 100).toFixed(2) + "%";
+
+                    document.getElementById("mRocAuc").textContent =
+                        data.roc_auc.toFixed(4);
+                    document.getElementById("mAccuracy").textContent =
+                        (data.accuracy * 100).toFixed(2) + "%";
+                    document.getElementById("mPrecision").textContent =
+                        (data.precision * 100).toFixed(2) + "%";
+                    document.getElementById("mRecall").textContent =
+                        (data.recall * 100).toFixed(2) + "%";
+                    document.getElementById("mF1").textContent =
+                        (data.f1_score * 100).toFixed(2) + "%";
+                    document.getElementById("mLogLoss").textContent =
+                        data.log_loss.toFixed(4);
+
+                    if (data.confusion_matrix) {
+                        document.getElementById("cmTN").textContent =
+                            data.confusion_matrix[0][0];
+                        document.getElementById("cmFP").textContent =
+                            data.confusion_matrix[0][1];
+                        document.getElementById("cmFN").textContent =
+                            data.confusion_matrix[1][0];
+                        document.getElementById("cmTP").textContent =
+                            data.confusion_matrix[1][1];
+                    }
+
+                    showToast("Metrics refreshed", "success");
+                } catch (error) {
+                    showToast(
+                        "Failed to load metrics: " + error.message,
+                        "error",
+                    );
+                } finally {
+                    hideLoading();
+                }
+            }
+
+            updateQuickStats();
+        </script>
+    </body>
+</html>
